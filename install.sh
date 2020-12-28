@@ -17,8 +17,9 @@ minify_install () {
     fi
     
     minify -r -o ".$USRLOC" --match="\.js" $NAME
-    minify -r -o ".$USRLOC" --match="\.css" $NAME
+    #minify -r -o ".$USRLOC" --match="\.css" $NAME
     #minify -r -o ".$USRLOC" --match="\.html" $NAME
+    cp "$NAME/stdplgin.css" ".$USRLOC/"
     cp "$NAME/manifest.json" ".$USRLOC/"
 }
 

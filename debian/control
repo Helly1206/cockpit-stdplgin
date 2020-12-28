@@ -1,0 +1,13 @@
+Source: cockpit-stdplgin
+Section: net
+Priority: optional
+Maintainer: Helly1206
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+XB-Plugin-Section: sharing
+
+Package: cockpit-stdplgin
+Architecture: all
+Depends: cockpit,
+         ${misc:Depends}
+Description: cockpit-stdplgin (Standard plugin containing library modules for cockpit UI)

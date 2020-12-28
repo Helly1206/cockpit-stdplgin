@@ -1,0 +1,7 @@
+{
+    "version": "215",
+    "requires": {
+	    "cockpit": "186"
+    },
+    "content-security-policy": "img-src * data: 'unsafe-inline'; default-src 'self' 'unsafe-inline' 'unsafe-eval'"
+}

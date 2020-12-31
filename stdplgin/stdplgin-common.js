@@ -1148,15 +1148,19 @@ class editForm {
                         optInput.checked = true;
                         checkSingle.call(optInput, inputData, datum);
                     }
-                    let optSpan = document.createElement("SPAN");
-                    optSpan.classList.add("select-space-name");
-                    optSpan.innerHTML = opt;
                     optLabel.appendChild(optInput);
-                    optLabel.appendChild(optSpan);
+                    if ((!('labelonly' in datum)) || (!datum.labelonly)) {
+                        let optSpan = document.createElement("SPAN");
+                        optSpan.classList.add("select-space-name");
+                        optSpan.setAttribute("option-value", opt);
+                        optSpan.innerHTML = opt;
+                        optLabel.appendChild(optSpan);
+                    }
                     if ("optslabel" in datum) {
                         if (datum.optslabel.length > i) {
                             let optSpan2 = document.createElement("SPAN");
                             optSpan2.classList.add("select-space-details");
+                            optSpan2.setAttribute("option-value", opt);
                             optSpan2.innerHTML = datum.optslabel[i];
                             optLabel.appendChild(optSpan2);
                         }
@@ -1173,7 +1177,7 @@ class editForm {
                 let lis = Array.from(inputData.childNodes);
                 lis.forEach(li => {
                     if (li.childNodes[0].childNodes[0].checked) {
-                        values.push(li.childNodes[0].childNodes[1].innerHTML);
+                        values.push(li.childNodes[0].childNodes[1].getAttribute("option-value"));
                     }
                 });
                 if (values.length > 1) {
@@ -1221,7 +1225,7 @@ class editForm {
                         let lis = Array.from(inpDatum.childNodes);
                         lis.forEach(li => {
                             if (li.childNodes[0].childNodes[0].checked) {
-                                values.push(li.childNodes[0].childNodes[1].innerHTML);
+                                values.push(li.childNodes[0].childNodes[1].getAttribute("option-value"));
                             }
                         });
                         if (values.length > 1) {
@@ -1274,7 +1278,7 @@ class editForm {
                             element.setAttribute("data-value", datum.value);
                             let lis = Array.from(element.childNodes);
                             lis.forEach(li => {
-                                li.childNodes[0].childNodes[0].checked = (datum.value.includes(li.childNodes[0].childNodes[1].innerHTML));
+                                li.childNodes[0].childNodes[0].checked = (datum.value.includes(li.childNodes[0].childNodes[1].getAttribute("option-value")));
                             });
                         } else if (element.getAttribute("data-field-type") == "multi") {
                             element.value = datum.value.join(", ");
@@ -1405,6 +1409,12 @@ class modalDialog {
         dataField.classList.add("panel-title");
         dataField.innerHTML = data;
         this.modalBody.appendChild(dataField);
+    }
+
+    disposeData(data) {
+        while (this.modalBody.firstChild) {
+            this.modalBody.firstChild.remove();
+        }
     }
 
     show() {
@@ -1556,8 +1566,15 @@ class confirmDialog extends modalDialog {
 }
 
 class editDialog extends modalDialog {
-    build(title, data, cbEdit = null, cbCancel = null, parent = null) {
+    constructor(caller, parent = null) {
+        super(caller);
         this.editForm = new editForm(this, parent);
+        this.cancelButton = null;
+        this.editButton = null;
+    }
+
+    build(title, data, cbEdit = null, cbCancel = null, parent = null) {
+        this.disposeData();
         var editCallback = function() {
             if (cbEdit != null) {
                 cbEdit.call(this.caller, this.editForm.getFormData());
@@ -1565,8 +1582,12 @@ class editDialog extends modalDialog {
         };
         this.dataForm = document.createElement("FORM");
         super.build(title, data);
-        this.addButton("Cancel", cbCancel, false, true, false);
-        this.addButton("Edit", editCallback.bind(this), true, false, false);
+        if (!this.cancelButton) {
+            this.cancelButton = this.addButton("Cancel", cbCancel, false, true, false);
+        }
+        if (!this.editButton) {
+            this.editButton = this.addButton("Edit", editCallback.bind(this), true, false, false);
+        }
     }
 
     setData(data) {
@@ -1575,6 +1596,14 @@ class editDialog extends modalDialog {
 
     updateData(data) {
         this.editForm.updateFormData(data);
+    }
+
+    setEditButtonDisabled(value) {
+        this.setButtonDisabled(this.editButton, value);
+    }
+
+    setCancelButtonDisabled(value) {
+        this.setButtonDisabled(this.cancelButton, value);
     }
 }
 
@@ -1956,13 +1985,13 @@ class logger {
             if (item != null) {
                 lines += 1;
                 if (item != "") {
-                    let parts = item.split("-");
+                    let parts = item.split(" - ");
                     let logItem = {};
                     if (parts.length > 3) {
                         logItem.Date = parts[0].trim();
                         logItem.Level = parts[1].trim();
                         logItem.Module = parts[2].trim();
-                        logItem.Event = parts[3].trim();
+                        logItem.Event = parts.slice(3).join(" - ");
                     } else if (parts.length > 2) {
                         logItem.Date = parts[0].trim();
                         logItem.Level = parts[1].trim();

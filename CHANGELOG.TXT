@@ -1,2 +1,10 @@
+[B]0.8.1[/B]
+- changed comment line spacing
+- Add possibility to disable buttons in edit dialog
+- Removed grey overlay on disabled onoff button
+- Updated setting dialog, add ability to rebuild by adding disposeData to editForm
+- Add labelonly option to disk input to hide full paths
+- Small bugfix in logging
+
 [B]0.8.0[/B]
 - Initial release

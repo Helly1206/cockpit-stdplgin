@@ -2,7 +2,7 @@ cockpit-stdplgin (0.82) stable; urgency=low
 
   * Added updateData functionality to settingsEditForm 
 
- -- Helly1206 <hellyrulez@hotmail.com>  Fir, 01 Jan 2020 20:05:56 +0100
+ -- Helly1206 <hellyrulez@hotmail.com>  Fri, 01 Jan 2020 20:05:56 +0100
 
 cockpit-stdplgin (0.81) stable; urgency=low
 

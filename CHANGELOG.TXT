@@ -1,3 +1,6 @@
+[B]0.8.2[/B]
+- Added updateData functionality to settingsEditForm 
+
 [B]0.8.1[/B]
 - changed comment line spacing
 - Add possibility to disable buttons in edit dialog

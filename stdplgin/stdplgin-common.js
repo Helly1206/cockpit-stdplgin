@@ -1344,6 +1344,10 @@ class settingsEditForm {
     getData() {
         return this.editForm.getFormData();
     }
+
+    updateData(data) {
+        this.editForm.updateFormData(data);
+    }
 }
 
 class modalDialog {

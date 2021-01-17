@@ -546,6 +546,9 @@ class editForm {
                 case "ip":
                     inputData = this.inputIp(datum);
                     break;
+                case "multiip":
+                    inputData = this.inputMultiIp(datum);
+                    break;
                 case "object":
                     inputData = this.inputObject(datum);
                     break;
@@ -652,85 +655,16 @@ class editForm {
             inputData.setAttribute("data-field-type", "ip");
             inputData.innerHTML = datum.value;
         } else {
-            let ipArray = this.ip2array(datum.value);
+            let onChange = function(param, data) {
+                if ('onchange' in datum) {
+                    datum.onchange.call(this.parent.caller, param, data);
+                }
+            }.bind(this);
             inputData = document.createElement("div");
             inputData.classList.add("form-control");
             inputData.setAttribute("data-field", datum.param);
             inputData.setAttribute("data-field-type", "ip");
-            for (var i = 0; i < 4; i++) {
-                var inputIp = document.createElement("INPUT");
-                inputIp.classList.add("ip-item");
-                inputIp.setAttribute("type", "number");
-                inputIp.setAttribute("maxlength", 3);
-                inputIp.setAttribute("data-field1", datum.param);
-                inputIp.setAttribute("index", i);
-                inputIp.setAttribute("min", 0);
-                inputIp.setAttribute("max", 255);
-                inputIp.setAttribute("step", 1);
-                inputIp.disabled = datum.disabled;
-                inputIp.value = ipArray[i];
-                inputIp.onkeyup = function() {
-                    if (this.value.length >= this.maxLength) {
-                        if (Number(this.value) > 255) {
-                            this.value = 255;
-                        } else if (Number(this.value) < 0) {
-                            this.value = 0;
-                        } else if (Number(this.value).toFixed() != Number(this.value)) {
-                            this.value = Number(this.value).toFixed();
-                        }
-                        let q = inputData.querySelector('[data-field1="'+datum.param+'"][index="'+(Number(this.getAttribute("Index"))+1).toString()+'"]');
-                        if (q) {
-                            q.focus();
-                        }
-                    }
-                }
-                inputData.appendChild(inputIp);
-                if (i < 3) {
-                    var textnode = document.createTextNode(".");
-                    inputData.appendChild(textnode);
-                }
-            }
-            if (('showmask' in datum) && (datum.showmask)) {
-                var textnode = document.createTextNode("/");
-                inputData.appendChild(textnode);
-                var inputIp = document.createElement("INPUT");
-                inputIp.classList.add("ip-item");
-                inputIp.setAttribute("type", "number");
-                inputIp.setAttribute("maxlength", 2);
-                inputIp.setAttribute("data-field1", datum.param);
-                inputIp.setAttribute("index", 4);
-                inputIp.setAttribute("min", 0);
-                inputIp.setAttribute("max", 32);
-                inputIp.setAttribute("step", 1);
-                inputIp.disabled = datum.disabled;
-                inputIp.value = ipArray[4];
-                inputIp.onkeyup = function() {
-                    if (this.value.length >= this.maxLength) {
-                        if (Number(this.value) > 32) {
-                            this.value = 32;
-                        } else if (Number(this.value) < 0) {
-                            this.value = 0;
-                        } else if (Number(this.value).toFixed() != Number(this.value)) {
-                            this.value = Number(this.value).toFixed();
-                        }
-                    }
-                }
-                inputData.appendChild(inputIp);
-            }
-
-            if ('onchange' in datum) {
-                inputData.onchange = function() {
-                    var data = [];
-                    data[0] = inputData.querySelector('[data-field1="'+datum.param+'"][index="0"]').value;
-                    data[1] = inputData.querySelector('[data-field1="'+datum.param+'"][index="1"]').value;
-                    data[2] = inputData.querySelector('[data-field1="'+datum.param+'"][index="2"]').value;
-                    data[3] = inputData.querySelector('[data-field1="'+datum.param+'"][index="3"]').value;
-                    if (('showmask' in datum) && (datum.showmask)) {
-                        data[4] = inputData.querySelector('[data-field1="'+datum.param+'"][index="4"]').value;
-                    }
-                    datum.onchange.call(this.parent.caller, datum.param, this.array2ip(data));
-                }.bind(this);
-            }
+            inputData.appendChild(this.ipInputField(datum.param, datum.value, datum.disabled, datum.showmask, onChange));
         }
         inputDiv.appendChild(inputData);
         if ('comment' in datum) {
@@ -780,6 +714,186 @@ class editForm {
             ip += "/" + data[4].toString();
         }
         return ip;
+    }
+
+    ipInputField(param, value, disabled, showmask, onchange) {
+        var ipArray = this.ip2array(value);
+        var inputData = document.createElement("div");
+        for (var i = 0; i < 4; i++) {
+            var inputIp = document.createElement("INPUT");
+            inputIp.classList.add("ip-item");
+            inputIp.setAttribute("type", "number");
+            inputIp.setAttribute("maxlength", 3);
+            inputIp.setAttribute("data-field1", param);
+            inputIp.setAttribute("index", i);
+            inputIp.setAttribute("min", 0);
+            inputIp.setAttribute("max", 255);
+            inputIp.setAttribute("step", 1);
+            inputIp.disabled = disabled;
+            inputIp.value = ipArray[i];
+            inputIp.onkeyup = function() {
+                if (this.value.length >= this.maxLength) {
+                    if (Number(this.value) > 255) {
+                        this.value = 255;
+                    } else if (Number(this.value) < 0) {
+                        this.value = 0;
+                    } else if (Number(this.value).toFixed() != Number(this.value)) {
+                        this.value = Number(this.value).toFixed();
+                    }
+                    let q = inputData.querySelector('[data-field1="'+param+'"][index="'+(Number(this.getAttribute("Index"))+1).toString()+'"]');
+                    if (q) {
+                        q.focus();
+                    }
+                }
+            }
+            inputData.appendChild(inputIp);
+            if (i < 3) {
+                var textnode = document.createTextNode(".");
+                inputData.appendChild(textnode);
+            }
+        }
+        if (showmask) {
+            var textnode = document.createTextNode("/");
+            inputData.appendChild(textnode);
+            var inputIp = document.createElement("INPUT");
+            inputIp.classList.add("ip-item");
+            inputIp.setAttribute("type", "number");
+            inputIp.setAttribute("maxlength", 2);
+            inputIp.setAttribute("data-field1", param);
+            inputIp.setAttribute("index", 4);
+            inputIp.setAttribute("min", 0);
+            inputIp.setAttribute("max", 32);
+            inputIp.setAttribute("step", 1);
+            inputIp.disabled = disabled;
+            inputIp.value = ipArray[4];
+            inputIp.onkeyup = function() {
+                if (this.value.length >= this.maxLength) {
+                    if (Number(this.value) > 32) {
+                        this.value = 32;
+                    } else if (Number(this.value) < 0) {
+                        this.value = 0;
+                    } else if (Number(this.value).toFixed() != Number(this.value)) {
+                        this.value = Number(this.value).toFixed();
+                    }
+                }
+            }
+            inputData.appendChild(inputIp);
+        }
+
+        if (onchange) {
+            inputData.onchange = function() {
+                var data = [];
+                data[0] = inputData.querySelector('[data-field1="'+param+'"][index="0"]').value;
+                data[1] = inputData.querySelector('[data-field1="'+param+'"][index="1"]').value;
+                data[2] = inputData.querySelector('[data-field1="'+param+'"][index="2"]').value;
+                data[3] = inputData.querySelector('[data-field1="'+param+'"][index="3"]').value;
+                if (showmask) {
+                    data[4] = inputData.querySelector('[data-field1="'+param+'"][index="4"]').value;
+                }
+                onchange(param, this.array2ip(data));
+            }.bind(this);
+        }
+        return inputData;
+    }
+
+    inputMultiIp(datum) {
+        var inputDiv = document.createElement("div");
+        var inputData = null;
+        inputData = document.createElement("UL");
+        if (datum.readonly) {
+            inputData.classList.add("readonly");
+        }
+        inputData.classList.add("list-group");
+        inputData.classList.add("dialog-list-ct");
+        inputData.classList.add("form-control");
+        inputData.setAttribute("data-field", datum.param);
+        inputData.setAttribute("data-value", datum.value);
+        inputData.setAttribute("data-field-type", "multiip");
+        datum.value.forEach(value => {
+            let optData = document.createElement("LI");
+            optData.classList.add("list-group-item");
+            let optLabel = document.createElement("LABEL");
+            optLabel.classList.add("select-space-row");
+            let optInput = document.createElement("INPUT");
+            optInput.setAttribute("type", "checkbox");
+            optInput.disabled = datum.disabled || datum.readonly;
+            optInput.checked = true;
+            optLabel.appendChild(optInput);
+            let optSpan = document.createElement("SPAN");
+            let onChange = function(param, data) {
+                optInput.checked = true;
+                optSpan.setAttribute("option-value", data);
+            }.bind(this);
+            optSpan.classList.add("select-space-name");
+            optSpan.setAttribute("option-value", value);
+            if (datum.readonly) {
+                optSpan.innerHTML = value;
+            } else {
+                optSpan.appendChild(this.ipInputField(datum.param, value, datum.disabled, datum.showmask, onChange));
+            }
+            optLabel.appendChild(optSpan);
+            optData.appendChild(optLabel);
+            inputData.appendChild(optData);
+        });
+        var AddEmptyIp = function() {
+            let optData = document.createElement("LI");
+            optData.classList.add("list-group-item");
+            let optLabel = document.createElement("LABEL");
+            optLabel.classList.add("select-space-row");
+            optLabel.classList.add("empty-ip");
+            let optInput = document.createElement("INPUT");
+            optInput.setAttribute("type", "checkbox");
+            optInput.disabled = datum.disabled || datum.readonly;
+            optInput.checked = false;
+            optInput.onchange = function() {
+                if (optLabel.classList.contains("empty-ip")) {
+                    optLabel.classList.remove("empty-ip");
+                    inputData.appendChild(AddEmptyIp());
+                }
+            }.bind(this);
+            optLabel.appendChild(optInput);
+            let optSpan = document.createElement("SPAN");
+            optSpan.classList.add("select-space-name");
+            let value = "0.0.0.0";
+            let onChange = function(param, data) {
+                optInput.checked = true;
+                optSpan.setAttribute("option-value", data);
+                if (optLabel.classList.contains("empty-ip")) {
+                    optLabel.classList.remove("empty-ip");
+                    inputData.appendChild(AddEmptyIp());
+                }
+            }.bind(this);
+            optSpan.setAttribute("option-value", value);
+            optSpan.appendChild(this.ipInputField(datum.param, value, datum.disabled, datum.showmask, onChange));
+            optLabel.appendChild(optSpan);
+            optData.appendChild(optLabel);
+            return optData;
+        }.bind(this);
+
+        if ((!datum.disabled) && (!datum.readonly)) {
+            inputData.appendChild(AddEmptyIp());
+        }
+
+        if ('onchange' in datum) {
+            inputData.onchange = function() {
+                let values = [];
+                let lis = Array.from(inputData.childNodes);
+                lis.forEach(li => {
+                    if (li.childNodes[0].childNodes[0].checked) {
+                        values.push(li.childNodes[0].childNodes[1].getAttribute("option-value"));
+                    }
+                });
+                datum.onchange.call(this.parent.caller, datum.param, values);
+            }.bind(this);
+        }
+        inputDiv.appendChild(inputData);
+        if ('comment' in datum) {
+            var commentSpan = document.createElement("SPAN");
+            commentSpan.classList.add("comment");
+            commentSpan.innerHTML = datum.comment;
+            inputDiv.appendChild(commentSpan);
+        }
+        return inputDiv;
     }
 
     inputObject(datum) {
@@ -1253,6 +1367,18 @@ class editForm {
                     }
                     data[dataField] = this.array2ip(ipData);
                     break;
+                case "multiip":
+                    if (!inpDatum.classList.contains("readonly")) {
+                        let values = [];
+                        let lis = Array.from(inpDatum.childNodes);
+                        lis.forEach(li => {
+                            if (li.childNodes[0].childNodes[0].checked) {
+                                values.push(li.childNodes[0].childNodes[1].getAttribute("option-value"));
+                            }
+                        });
+                        data[inpDatum.getAttribute("data-field")] = values;
+                    }
+                    break;
                 default: // handle as text, number, password, file
                     data[inpDatum.getAttribute("data-field")] = inpDatum.value;
             }
@@ -1297,7 +1423,9 @@ class editForm {
                             if (mask != null) {
                                 mask.value = ipData[4];
                             }
-                        } else { // input text, number, password, file
+                        } else if (element.getAttribute("data-field-type") == "multiip") {
+                            // not implemented
+                        }else { // input text, number, password, file
                             element.value = datum.value;
                         }
                     }
@@ -1919,9 +2047,10 @@ class fileDialog extends modalDialog {
 }
 
 class logger {
-    constructor(el, logfile) {
+    constructor(el, logfile, superuser = false) {
         this.el = el;
         this.logfile = logfile;
+        this.superuser = superuser;
         this.pageSize = 100;
         this.page = 1;
         this.refresh = 1000;
@@ -1984,6 +2113,7 @@ class logger {
     dataCallback(data) {
         var tabData = [];
         var lines = 0;
+        var has = [false, false, false];
         this.setPaneInfo(this.pane, this.page);
         data.trim("\n").split("\n").forEach(item => {
             if (item != null) {
@@ -1992,6 +2122,7 @@ class logger {
                     let parts = item.split(" - ");
                     let logItem = {};
                     if (parts.length > 3) {
+                        has = [true, true, true];
                         logItem.Date = parts[0].trim();
                         logItem.Level = parts[1].trim();
                         logItem.Module = parts[2].trim();
@@ -1999,17 +2130,32 @@ class logger {
                     } else if (parts.length > 2) {
                         logItem.Date = parts[0].trim();
                         logItem.Level = parts[1].trim();
-                        logItem.Module = "";
+                        if (has[2]) {
+                            logItem.Module = "";
+                        } else {
+                            has = [true, true, false];
+                        }
                         logItem.Event = parts[2].trim();
                     } else if (parts.length > 1) {
                         logItem.Date = parts[0].trim();
-                        logItem.Level = "";
-                        logItem.Module = "";
+                        has[0] = true;
+                        if (has[1]) {
+                            logItem.Level = "";
+                        }
+                        if (has[2]) {
+                            logItem.Module = "";
+                        }
                         logItem.Event = parts[1].trim();
                     } else {
-                        logItem.Date = "";
-                        logItem.Level = "";
-                        logItem.Module = "";
+                        if (has[0]) {
+                            logItem.Date = "";
+                        }
+                        if (has[1]) {
+                            logItem.Level = "";
+                        }
+                        if (has[2]) {
+                            logItem.Module = "";
+                        }
                         logItem.Event = parts[0].trim();
                     }
                     tabData.push(logItem);
@@ -2046,8 +2192,12 @@ class logger {
             this.dataCallback("");
             new msgBox(this, "Error reading log", "Log error: " + (data ? data : message));
         };
+        var opts = { err: "out" };
+        if (this.superuser) {
+            opts.superuser = "require";
+        }
 
-        return cockpit.spawn(command, { err: "out" })
+        return cockpit.spawn(command, opts)
         .done(cbDone.bind(this))
         .fail(cbFail.bind(this));
     }

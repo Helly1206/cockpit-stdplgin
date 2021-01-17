@@ -1,3 +1,8 @@
+[B]0.8.3[/B]
+- Added multiip field to editForm
+- Updated ip field in editForm
+- Allow reading of logfiles as superuser if required
+
 [B]0.8.2[/B]
 - Added updateData functionality to settingsEditForm 
 

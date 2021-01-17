@@ -2047,11 +2047,16 @@ class fileDialog extends modalDialog {
 }
 
 class logger {
-    constructor(el, logfile, superuser = false) {
+    constructor(el, logfile, superuser = false, reverse = true, buttons = true) {
         this.el = el;
         this.logfile = logfile;
         this.superuser = superuser;
+        this.reverse = reverse;
+        this.buttons = buttons;
         this.pageSize = 100;
+        if (!buttons) {
+            this.pageSize = 10000;
+        }
         this.page = 1;
         this.refresh = 1000;
         this.name = "logger";
@@ -2064,8 +2069,10 @@ class logger {
     displayContent(el) {
         this.pane.build();
         this.pane.getTable().setClickable(false);
-        this.btnPrev = this.pane.addButton("Previous", "<", this.btnPreviousCallback, false, true, false);
-        this.btnNext = this.pane.addButton("Next", ">", this.btnNextCallback, false, false, false);
+        if (this.buttons) {
+            this.btnPrev = this.pane.addButton("Previous", "<", this.btnPreviousCallback, false, true, false);
+            this.btnNext = this.pane.addButton("Next", ">", this.btnNextCallback, false, false, false);
+        }
         this.setTimer();
         return this.readLog(this.pageSize, this.page);
     }
@@ -2183,7 +2190,12 @@ class logger {
     readLog(lines, page) {
         // do not use cockpit.file command, but head/ tail to be able to read a partial file
         //let cmd = ["tail", "-n", (page*lines).toString(), this.logfile, "|", "head", "-n", lines.toString()];
-        var cmd = ["tac", this.logfile, "|", "sed", "-n", ((page-1)*lines+1).toString()+","+(page*lines).toString()+"p"];
+        var cmd = "";
+        if (this.reverse) {
+            cmd = ["tac", this.logfile, "|", "sed", "-n", ((page-1)*lines+1).toString()+","+(page*lines).toString()+"p"];
+        } else {
+            cmd = ["cat", this.logfile, "|", "sed", "-n", ((page-1)*lines+1).toString()+","+(page*lines).toString()+"p"];
+        }
         var command = ["/bin/sh", "-c", cmd.join(" ")];
         var cbDone = function(data) {
             this.dataCallback(data);

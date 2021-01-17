@@ -1,3 +1,6 @@
+[B]0.8.4[/B]
+- Added possiblity to inverse log file and hide buttons with large page
+
 [B]0.8.3[/B]
 - Added multiip field to editForm
 - Updated ip field in editForm

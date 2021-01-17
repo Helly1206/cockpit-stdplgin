@@ -1,3 +1,9 @@
+cockpit-stdplgin (0.84) stable; urgency=low
+
+  * Added possiblity to inverse log file and hide buttons with large page
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Sun, 17 Jan 2021 11:02:07 +0100
+
 cockpit-stdplgin (0.83) stable; urgency=low
 
   * Added multiip field to editForm and some minor updates 

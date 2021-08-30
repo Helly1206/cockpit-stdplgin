@@ -8,14 +8,18 @@ DEBFOLDER="debian"
 
 minify_install () {
     echo "Installing and compiling files"
-    
+
     which minify >/dev/null
     if [ $? -ne 0 ]; then
         echo "Minify not installed. Install minify first"
         echo "e.g. by: sudo apt install minify"
         exit
     fi
-    
+
+    if [ ! -d ".$USRLOC" ]; then
+        mkdir -p ".$USRLOC"
+    fi
+
     minify -r -o ".$USRLOC" --match="\.js" $NAME
     #minify -r -o ".$USRLOC" --match="\.css" $NAME
     #minify -r -o ".$USRLOC" --match="\.html" $NAME
@@ -49,7 +53,7 @@ then
 elif [ "$1" == "-c" ] || [ "$1" == "-C" ]
 then
 	echo "$LNAME Deleting compiled files in install folder"
-	rm -f ".$USRLOC"/*
+	rm -rf ".$USRDIR"
 	rm -f ./*.deb
 	rm -rf "$DEBFOLDER"/$LNAME
 	rm -rf "$DEBFOLDER"/.debhelper
@@ -65,11 +69,12 @@ then
 else
 	echo "$LNAME install script"
     minify_install
-    
+
     if [ ! -d "$USRLOC" ]; then
         mkdir "$USRLOC"
     fi
-    cp -r ".$USRLOC/." "$USRLOC/"
-	
-    
+    if [ -d ".$USRLOC" ]; then
+        cp -r ".$USRLOC/." "$USRLOC/"
+    fi
+
 fi

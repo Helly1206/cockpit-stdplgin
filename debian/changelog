@@ -1,3 +1,9 @@
+cockpit-stdplgin (0.86) stable; urgency=low
+
+  * Fixed scrollbars for newer versions of cockpit
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Fri, 24 Sep 2021 19:33:56 +0100
+
 cockpit-stdplgin (0.85) stable; urgency=low
 
   * Fixed some bugs on initial installation and dependencies

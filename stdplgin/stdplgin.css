@@ -10,6 +10,11 @@
      height: 100%;
  }
 
+ html:not(.index-page) body {
+     overflow-y: auto;
+     overflow-x: auto;
+ }
+
  /* There is too much padding between the Nav and the Toolbar */
 .pf-c-page__main-section:first-of-type {
     padding-bottom: 0;

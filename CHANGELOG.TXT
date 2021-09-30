@@ -1,5 +1,8 @@
+[B]0.8.7[/B]
+- Added canvas pane, e.g. for displaying graphs
+
 [B]0.8.6[/B]
-- Fixed scrollbars for newer versions of cockpit 
+- Fixed scrollbars for newer versions of cockpit
 
 [B]0.8.5[/B]
 - Fixed some bugs on initial installation and dependencies

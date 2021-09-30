@@ -15,10 +15,11 @@ class tabPane {
         this.panelactions = null;
         this.table = null;
         this.settings = null;
+        this.canvas = null;
         this.loadingSpinner = new spinnerLoading();
     }
 
-    build(spinnerText = "", settings = false) {
+    build(spinnerText = "", settings = false, canvas = false) {
         this.dispose();
 
         this.container = document.createElement("div");
@@ -49,7 +50,11 @@ class tabPane {
         var fluid = document.createElement("div");
         fluid.classList.add("container-fluid");
         this.container.appendChild(fluid);
-        if (settings) {
+        if (canvas) {
+            this.canvas = new canvasForm(this, this.disposeSpinner);
+            fluid.appendChild(this.canvas.create());
+        }
+        else if (settings) {
             this.settings = new settingsEditForm(this, this.disposeSpinner);
             fluid.appendChild(this.settings.create());
         } else {
@@ -144,6 +149,10 @@ class tabPane {
         return this.panelactions;
     }
 
+    getCanvas() {
+        return this.canvas;
+    }
+
     getTable() {
         return this.table;
     }
@@ -186,6 +195,32 @@ class spinnerLoading {
             this.obj.remove();
             this.obj = null;
         }
+    }
+}
+
+class canvasForm {
+    constructor(parent, callback) {
+        this.parent = parent;
+        this.callback = callback;
+        this.canvasBody = document.createElement("div");
+        this.canvasBody.setAttribute("id", "canvasForm");
+        this.canvas = document.createElement("canvas");
+        this.canvas.id     = "genericCanvas";
+        this.canvas.width  = 600;
+        this.canvas.height = 400;
+        this.canvasBody.appendChild(this.canvas);
+    }
+
+    create() {
+        return this.canvasBody;
+    }
+
+    setData() {
+        this.callback.call(this.parent);
+    }
+
+    getCanvas() {
+        return this.canvas;
     }
 }
 

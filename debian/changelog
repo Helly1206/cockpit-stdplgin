@@ -1,3 +1,9 @@
+cockpit-stdplgin (0.87) stable; urgency=low
+
+  * Added canvas pane, e.g. for displaying graphs
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Sun, 26 Sep 2021 09:03:28 +0100
+
 cockpit-stdplgin (0.86) stable; urgency=low
 
   * Fixed scrollbars for newer versions of cockpit

@@ -20,10 +20,10 @@ minify_install () {
         mkdir -p ".$USRLOC"
     fi
 
-    minify -r -o ".$USRLOC" --match="\.js" $NAME
+    minify -o ".$USRLOC/$NAME-common.js" "$NAME/$NAME-common.js"
     #minify -r -o ".$USRLOC" --match="\.css" $NAME
     #minify -r -o ".$USRLOC" --match="\.html" $NAME
-    cp "$NAME/stdplgin.css" ".$USRLOC/"
+    cp "$NAME/$NAME.css" ".$USRLOC/"
     cp "$NAME/manifest.json" ".$USRLOC/"
 }
 

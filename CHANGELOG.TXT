@@ -1,3 +1,6 @@
+[B]0.8.8[/B]
+- Fixed deb generation folder error
+
 [B]0.8.7[/B]
 - Added canvas pane, e.g. for displaying graphs
 

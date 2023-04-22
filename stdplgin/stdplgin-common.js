@@ -2249,3 +2249,155 @@ class logger {
         .fail(cbFail.bind(this));
     }
 }
+
+class journalLogger {
+    constructor(el, logfile, superuser = false, reverse = true, buttons = true) {
+        this.el = el;
+        this.logfile = logfile;
+        this.superuser = superuser;
+        this.reverse = reverse;
+        this.buttons = buttons;
+        this.pageSize = 100;
+        if (!buttons) {
+            this.pageSize = 10000;
+        }
+        this.page = 1;
+        this.refresh = 1000;
+        this.name = "journalLogger";
+        this.pane = new tabPane(this, el, this.name);
+        this.btnPrev = null;
+        this.btnNext = null;
+        this.timer = null;
+    }
+
+    displayContent(el) {
+        this.pane.build();
+        this.pane.getTable().setClickable(false);
+        if (this.buttons) {
+            this.btnPrev = this.pane.addButton("Previous", "<", this.btnPreviousCallback, false, true, false);
+            this.btnNext = this.pane.addButton("Next", ">", this.btnNextCallback, false, false, false);
+        }
+        this.setTimer();
+        return this.readLog(this.pageSize, this.page);
+    }
+
+    setPageSize(pSize) {
+        this.pageSize = pSize;
+    }
+
+    setRefreshRate(refr) {
+        this.refresh = refr;
+    }
+
+    setTimer() {
+        var onTimer = function() {
+            this.readLog(this.pageSize, this.page)
+        };
+        if (this.timer == null) {
+            this.timer = setInterval(onTimer.bind(this), this.refresh);
+        }
+    }
+
+    clearTimer() {
+        if (this.timer != null) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    }
+
+    btnPreviousCallback() {
+        this.page -= 1;
+        this.readLog(this.pageSize, this.page);
+    }
+
+    btnNextCallback() {
+        this.page += 1;
+        this.readLog(this.pageSize, this.page);
+        // If empty log (or smaller then pageSize), disable next
+    }
+
+    setPaneInfo(pane, page) {
+        var now = new Date();
+        pane.getTitle().innerHTML = "Log - Page: " + page.toString() + ", Updated: " + now.toLocaleString();
+    }
+
+    dataCallback(data) {
+        var tabData = [];
+        var lines = 0;
+        this.setPaneInfo(this.pane, this.page);
+        data.trim("\n").split("\n").forEach(item => {
+            if (item != null) {
+                lines += 1;
+                if (item != "") {
+                    let logItem = {};
+                    let doPush = false;
+                    let parts1 = item.split("]:");
+                    if (parts1.length > 1) {
+                        let parts2 = parts1[0].split('[').slice(0, -1).join('[');
+                        logItem.Date = parts2.split(" ").slice(0,-2).join(" ");
+                        logItem.Module = parts2.split(" ").slice(-1);
+                        logItem.Event = parts1[1];
+                        if ((logItem.Date != "") && (logItem.Module != "")) {
+                            doPush = true;
+                        }
+                    } else if (parts1[0] != "") {
+                        let parts2 = parts1[0].split('[').slice(0, -1).join('[');
+                        logItem.Date = parts2.split(" ").slice(0,-2).join(" ");
+                        logItem.Module = parts2.split(" ").slice(-1);
+                        logItem.Event = "";
+                        if ((logItem.Date != "") && (logItem.Module != "")) {
+                            doPush = true;
+                        }
+                    }
+                    if (doPush) {
+                        tabData.push(logItem);
+                    }
+                }
+            }
+        });
+
+        if (this.page <= 1) {
+            this.pane.setButtonDisabled(this.btnPrev, true);
+            this.setTimer();
+        } else {
+            this.pane.setButtonDisabled(this.btnPrev, false);
+            this.clearTimer();
+        }
+
+        if (lines < this.pageSize) {
+            this.pane.setButtonDisabled(this.btnNext, true);
+        } else {
+            this.pane.setButtonDisabled(this.btnNext, false);
+        }
+
+        this.pane.getTable().setData(tabData);
+    }
+
+    readLog(lines, page) {
+        // do not use cockpit.file command, but head/ tail to be able to read a partial file
+        //let cmd = ["tail", "-n", (page*lines).toString(), this.logfile, "|", "head", "-n", lines.toString()];
+        //journalctl -u xxxxxx --no-pager -r
+        var cmd = "";
+        if (this.reverse) {
+            cmd = ["journalctl", "-u", this.logfile, "--no-pager", "-r", "|", "sed", "-n", ((page-1)*lines+1).toString()+","+(page*lines).toString()+"p"];
+        } else {
+            cmd = ["journalctl", "-u", this.logfile, "--no-pager", "|", "sed", "-n", ((page-1)*lines+1).toString()+","+(page*lines).toString()+"p"];
+        }
+        var command = ["/bin/sh", "-c", cmd.join(" ")];
+        var cbDone = function(data) {
+            this.dataCallback(data);
+        };
+        var cbFail = function(message, data) {
+            this.dataCallback("");
+            new msgBox(this, "Error reading log", "Log error: " + (data ? data : message));
+        };
+        var opts = { err: "out" };
+        if (this.superuser) {
+            opts.superuser = "require";
+        }
+
+        return cockpit.spawn(command, opts)
+        .done(cbDone.bind(this))
+        .fail(cbFail.bind(this));
+    }
+}

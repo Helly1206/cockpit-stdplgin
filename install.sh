@@ -59,6 +59,7 @@ then
 	rm -rf "$DEBFOLDER"/.debhelper
 	rm -f "$DEBFOLDER"/files
 	rm -f "$DEBFOLDER"/files.new
+    rm -f "$DEBFOLDER"/debhelper-build-stamp
 	rm -f "$DEBFOLDER"/$LNAME.*
 elif [ "$1" == "-d" ] || [ "$1" == "-D" ]
 then

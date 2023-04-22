@@ -1,4 +1,4 @@
-cockpit-stdplgin v0.8.8
+cockpit-stdplgin v0.9.0
 
 cockpit-stdplgin -- Standard plugin containing library modules for cockpit UI
 ================ == ======== ====== ========== ====== ======== === ======= ==
@@ -17,6 +17,7 @@ This version contains the following modules:
 - editDialog (editForm in modal dialog)
 - fileDialog (file manager dialog in modal dialog)
 - logger (to read log files page by page and auto update. Logging format: ['Date - Level - Module - Event']
+- journalLogger (to read journal logs page by page and auto update. Logging format: ['Date - Module - Event']
 
 That's all for now ...
 

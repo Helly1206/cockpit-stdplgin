@@ -1,3 +1,9 @@
+cockpit-stdplgin (0.90) stable; urgency=low
+
+  * Fixed deb generation folder error
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Sat, 22 Apr 2023 16:39:15 +0100
+
 cockpit-stdplgin (0.88) stable; urgency=low
 
   * Fixed deb generation folder error

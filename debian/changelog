@@ -1,6 +1,12 @@
+cockpit-stdplgin (0.91) stable; urgency=low
+
+  * Added label option to select input
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Thu, 27 Apr 2023 08:37:36 +0100
+
 cockpit-stdplgin (0.90) stable; urgency=low
 
-  * Fixed deb generation folder error
+  * Added journal logger to log from journal
 
  -- Helly1206 <hellyrulez@hotmail.com>  Sat, 22 Apr 2023 16:39:15 +0100
 

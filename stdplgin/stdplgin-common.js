@@ -1215,7 +1215,27 @@ class editForm {
             inputData = document.createElement("div");
             inputData.setAttribute("data-field", datum.param);
             inputData.setAttribute("data-field-type", "select");
-            inputData.innerHTML = datum.value;
+            let optValue = "";
+            let optLabel = "";
+            if ('opts' in datum) {
+                var i = 0;
+                datum.opts.forEach(opt => {
+                    if (opt == datum.value) {
+                        optValue = opt;
+                    }
+                    if ("optslabel" in datum) {
+                        if (datum.optslabel.length > i) {
+                            if ((!('displaylabel' in datum)) || (datum.displaylabel)) {
+                                optLabel = " [" + datum.optslabel[i] + "]";
+                            }
+                        }
+                    }
+                    i += 1;
+                });
+            } else {
+                optValue = datum.value;
+            }
+            inputData.innerHTML = optValue + optLabel;
         } else {
             inputData = document.createElement("SELECT");
             inputData.classList.add("ct-select");
@@ -1225,18 +1245,39 @@ class editForm {
             inputData.setAttribute("data-value", datum.value);
             inputData.setAttribute("data-field-type", "select");
             if ('opts' in datum) {
+                var i = 0;
                 datum.opts.forEach(opt => {
                     let optData = document.createElement("OPTION");
+                    let optLabel = "";
+                    let valLabel = "";
                     if (opt == datum.value) {
                         optData.selected = true;
                     }
-                    optData.innerHTML = opt;
+                    optData.value = opt;
+                    if ("optslabel" in datum) {
+                        if (datum.optslabel.length > i) {
+                            if ((!('displaylabel' in datum)) || (datum.displaylabel)) {
+                                optLabel = " [" + datum.optslabel[i] + "]";
+                            }
+                            if ((('labelvalue' in datum)) && (datum.labelvalue)) {
+                                valLabel = datum.optslabel[i];
+                            }
+                        }
+                    }
+                    optData.opt = opt;
+                    if (valLabel) {
+                        optData.value = valLabel;
+                    } else {
+                        optData.value = opt;
+                    }
+                    optData.innerHTML = opt + optLabel;
                     inputData.appendChild(optData);
+                    i += 1;
                 });
             }
             if ('onchange' in datum) {
                 inputData.onchange = function() {
-                    datum.onchange.call(this.parent.caller, datum.param, inputData.getElementsByTagName("option")[inputData.selectedIndex].text);
+                    datum.onchange.call(this.parent.caller, datum.param, inputData.getElementsByTagName("option")[inputData.selectedIndex].value);
                 }.bind(this);
             }
         }
@@ -1366,7 +1407,7 @@ class editForm {
                     }
                     break;
                 case "select":
-                    data[inpDatum.getAttribute("data-field")] = inpDatum.getElementsByTagName("option")[inpDatum.selectedIndex].text;
+                    data[inpDatum.getAttribute("data-field")] = inpDatum.getElementsByTagName("option")[inpDatum.selectedIndex].value;
                     break;
                 case "disk":
                     if (!inpDatum.classList.contains("readonly")) {
@@ -1433,7 +1474,7 @@ class editForm {
                             element.setAttribute("data-value", datum.value);
                             let options = Array.from(element.getElementsByTagName("option"));
                             options.forEach(option => {
-                                option.selected = (option.innerHTML == datum.value);
+                                option.selected = (option.opt == datum.value);
                             });
                         } else if (element.tagName.toLowerCase() == "ul") { // disk
                             element.setAttribute("data-value", datum.value);

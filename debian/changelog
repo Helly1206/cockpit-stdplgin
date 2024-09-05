@@ -1,3 +1,21 @@
+cockpit-stdplgin (0.93) stable; urgency=low
+
+  * Placed fa icons and cockpit.css locallyto overcome version incompatibility
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Thu, 5 Sep 2024 13:28:23 +0100
+
+cockpit-stdplgin (0.92) stable; urgency=low
+
+  * Fixed hamburger icon appearance
+  * Add option to change button name on editDialog
+  * Added option to display settings pane, and canvas pane, and table pane
+  * Add option to hide dropdown menu items if condition met
+  * Add option to hide a button
+  * Add update of opts in updateData
+  * Add optscomment to disk field to enter comments
+
+ -- Helly1206 <hellyrulez@hotmail.com>  Sun, 30 Apr 2023 10:46:28 +0100
+
 cockpit-stdplgin (0.91) stable; urgency=low
 
   * Added label option to select input

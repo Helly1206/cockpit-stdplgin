@@ -1,4 +1,4 @@
-cockpit-stdplgin v0.9.1
+cockpit-stdplgin v0.9.3
 
 cockpit-stdplgin -- Standard plugin containing library modules for cockpit UI
 ================ == ======== ====== ========== ====== ======== === ======= ==

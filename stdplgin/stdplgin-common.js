@@ -19,8 +19,12 @@ class tabPane {
         this.loadingSpinner = new spinnerLoading();
     }
 
-    build(spinnerText = "", settings = false, canvas = false) {
+    build(spinnerText = "", settings = false, canvas = false, table = false) {
         this.dispose();
+
+        if ((!settings) && (!canvas)) {
+            table = true;
+        }
 
         this.container = document.createElement("div");
         this.container.id = "panel-container-" + this.id;
@@ -50,14 +54,15 @@ class tabPane {
         var fluid = document.createElement("div");
         fluid.classList.add("container-fluid");
         this.container.appendChild(fluid);
+        if (settings) {
+            this.settings = new settingsEditForm(this, this.disposeSpinner);
+            fluid.appendChild(this.settings.create());
+        }
         if (canvas) {
             this.canvas = new canvasForm(this, this.disposeSpinner);
             fluid.appendChild(this.canvas.create());
         }
-        else if (settings) {
-            this.settings = new settingsEditForm(this, this.disposeSpinner);
-            fluid.appendChild(this.settings.create());
-        } else {
+        if (table) {
             // build standard table
             this.table = new dataTable(this, this.disposeSpinner);
             fluid.appendChild(this.table.create());
@@ -137,6 +142,18 @@ class tabPane {
                 btn.classList.add("privileged");
             } else {
                 btn.classList.remove("privileged");
+            }
+        }
+    }
+
+    setButtonHidden(btn, hidden) {
+        if (btn != null) {
+            if (hidden) {
+                btn.style.visibility='hidden';
+                btn.style.display = "none";
+            } else {
+                btn.style.visibility='visible';
+                btn.style.display = "inline";
             }
         }
     }
@@ -401,22 +418,22 @@ class dataTable {
     setCellValue(cell, value) {
         if (typeof value === "boolean") {
             var span = document.createElement("span");
-            span.classList.add("pficon");
+            span.classList.add("fas");
             if (value) {
-                span.classList.add("pficon-ok");
+                span.classList.add("fa-check-circle");
                 span.classList.add("true");
             } else {
-                span.classList.add("pficon-error-circle-o");
+                span.classList.add("fa-exclamation-circle");
                 span.classList.add("false");
             }
-            span.classList.add("list-view-pf-icon-sm");
+            //span.classList.add("list-view-pf-icon-sm");
             cell.classList.add("alignCenter");
             cell.appendChild(span);
         } else if (value == "N/A") {
             var span = document.createElement("span");
-            span.classList.add("pficon");
-            span.classList.add("pficon-unknown");
-            span.classList.add("list-view-pf-icon-sm");
+            span.classList.add("fas");
+            span.classList.add("fa-question-circle");
+            //span.classList.add("list-view-pf-icon-sm");
             cell.classList.add("alignCenter");
             span.classList.add("na");
             cell.appendChild(span);
@@ -484,12 +501,24 @@ class dataTable {
     }
 
     addDropdownElements(row, ul) {
+        var rowData = this.generateRowData(row);
         this.dropDown.forEach(item => {
-            if ('name' in item) {
+            let hidden = false;
+            if (('hidden' in item) && ('hiddenValue' in item)) {
+                if (item.hidden != null) {
+                    if (item.hiddenValue == null) {
+                        hidden = true;
+                    } else {
+                        if (item.hidden in rowData) {
+                            hidden = String(rowData[item.hidden]) == String(item.hiddenValue);
+                        }
+                    }
+                }
+            }
+            if ((!hidden) && ('name' in item)) {
                 let li = document.createElement("li");
-                let rowData = this.generateRowData(row);
+                let disable = false;
                 if (('disable' in item) && ('disableValue' in item)) {
-                    let disable = false;
                     if (item.disable != null) {
                         if (item.disableValue == null) {
                             disable = true;
@@ -508,7 +537,7 @@ class dataTable {
                 a.setAttribute("data-toggle", "modal");
                 a.setAttribute("tabindex", -1);
                 a.innerHTML = item.name;
-                if ('callback' in item) {
+                if (('callback' in item) && (!disable)) {
                     let cb = item.callback;
                     let optionClick = function() {
                         if (cb != null) {
@@ -1021,22 +1050,23 @@ class editForm {
                 }.bind(this);
             }
             let toggleField = document.createElement("i");
-            toggleField.classList.add("pficon-locked");
+            toggleField.classList.add("fas");
+            toggleField.classList.add("fa-lock");
             toggleField.onmousedown = function() {
                 if (!inputData.disabled) {
-                    toggleField.classList.remove("pficon-locked");
-                    toggleField.classList.add("pficon-unlocked");
+                    toggleField.classList.remove("fa-lock");
+                    toggleField.classList.add("fa-lock-open");
                     inputData.setAttribute("type", "text");
                 }
             }.bind(this);
             toggleField.onmouseup = function() {
-                toggleField.classList.remove("pficon-unlocked");
-                toggleField.classList.add("pficon-locked");
+                toggleField.classList.remove("fa-lock-open");
+                toggleField.classList.add("fa-lock");
                 inputData.setAttribute("type", "password");
             }.bind(this);
             toggleField.onmouseout = function() {
-                toggleField.classList.remove("pficon-unlocked");
-                toggleField.classList.add("pficon-locked");
+                toggleField.classList.remove("fa-lock-open");
+                toggleField.classList.add("fa-lock");
                 inputData.setAttribute("type", "password");
             }.bind(this);
             passwordData.appendChild(inputData);
@@ -1081,7 +1111,8 @@ class editForm {
             }.bind(this);
             let fmField = document.createElement("i");
             fmField.disabled = datum.disabled;
-            fmField.classList.add("pficon-folder-open");
+            fmField.classList.add("fas");
+            fmField.classList.add("fa-folder-open");
             fmField.onclick = function() {
                 if (!fmField.disabled) {
                     var cbOk = function(newPath) {
@@ -1244,37 +1275,7 @@ class editForm {
             inputData.setAttribute("data-field", datum.param);
             inputData.setAttribute("data-value", datum.value);
             inputData.setAttribute("data-field-type", "select");
-            if ('opts' in datum) {
-                var i = 0;
-                datum.opts.forEach(opt => {
-                    let optData = document.createElement("OPTION");
-                    let optLabel = "";
-                    let valLabel = "";
-                    if (opt == datum.value) {
-                        optData.selected = true;
-                    }
-                    optData.value = opt;
-                    if ("optslabel" in datum) {
-                        if (datum.optslabel.length > i) {
-                            if ((!('displaylabel' in datum)) || (datum.displaylabel)) {
-                                optLabel = " [" + datum.optslabel[i] + "]";
-                            }
-                            if ((('labelvalue' in datum)) && (datum.labelvalue)) {
-                                valLabel = datum.optslabel[i];
-                            }
-                        }
-                    }
-                    optData.opt = opt;
-                    if (valLabel) {
-                        optData.value = valLabel;
-                    } else {
-                        optData.value = opt;
-                    }
-                    optData.innerHTML = opt + optLabel;
-                    inputData.appendChild(optData);
-                    i += 1;
-                });
-            }
+            this.inputSelectOpts(datum, inputData);
             if ('onchange' in datum) {
                 inputData.onchange = function() {
                     datum.onchange.call(this.parent.caller, datum.param, inputData.getElementsByTagName("option")[inputData.selectedIndex].value);
@@ -1291,19 +1292,42 @@ class editForm {
         return inputDiv;
     }
 
-    inputDisk(datum) {
-        var checkSingle = function(inpData, datum) {
-            if ("optssingle" in datum) {
-                if ((datum.optssingle) && (this.checked)) {
-                    let inputs = Array.from(inpData.getElementsByTagName("input"));
-                    inputs.forEach(input => {
-                        if ((input.checked) && (input != this)) {
-                            input.checked = false;
-                        }
-                    });
+    inputSelectOpts(datum, inputData) {
+        if ("opts" in datum) {
+            var i = 0;
+            inputData.options.length = 0;
+            datum.opts.forEach(opt => {
+                let optData = document.createElement("OPTION");
+                let optLabel = "";
+                let valLabel = "";
+                if (opt == datum.value) {
+                    optData.selected = true;
                 }
-            }
-        };
+                optData.value = opt;
+                if ("optslabel" in datum) {
+                    if (datum.optslabel.length > i) {
+                        if ((!('displaylabel' in datum)) || (datum.displaylabel)) {
+                            optLabel = " [" + datum.optslabel[i] + "]";
+                        }
+                        if ((('labelvalue' in datum)) && (datum.labelvalue)) {
+                            valLabel = datum.optslabel[i];
+                        }
+                    }
+                }
+                optData.opt = opt;
+                if (valLabel) {
+                    optData.value = valLabel;
+                } else {
+                    optData.value = opt;
+                }
+                optData.innerHTML = opt + optLabel;
+                inputData.appendChild(optData);
+                i += 1;
+            });
+        }
+    }
+
+    inputDisk(datum) {
         var inputDiv = document.createElement("div");
         var inputData = null;
         inputData = document.createElement("UL");
@@ -1316,51 +1340,7 @@ class editForm {
         inputData.setAttribute("data-field", datum.param);
         inputData.setAttribute("data-value", datum.value);
         inputData.setAttribute("data-field-type", "disk");
-        if ('opts' in datum) {
-            var i = 0;
-            datum.opts.forEach(opt => {
-                let addOpt = true;
-                if ((datum.disabled || datum.readonly) && (!datum.value.includes(opt))) {
-                    addOpt = false;
-                }
-                if (addOpt) {
-                    let optData = document.createElement("LI");
-                    optData.classList.add("list-group-item");
-                    let optLabel = document.createElement("LABEL");
-                    optLabel.classList.add("select-space-row");
-                    var optInput = document.createElement("INPUT");
-                    optInput.setAttribute("type", "checkbox");
-                    optInput.disabled = datum.disabled || datum.readonly;
-                    optInput.onchange = function() {
-                        checkSingle.call(optInput, inputData, datum);
-                    }.bind(this);
-                    if (datum.value.includes(opt)) {
-                        optInput.checked = true;
-                        checkSingle.call(optInput, inputData, datum);
-                    }
-                    optLabel.appendChild(optInput);
-                    if ((!('labelonly' in datum)) || (!datum.labelonly)) {
-                        let optSpan = document.createElement("SPAN");
-                        optSpan.classList.add("select-space-name");
-                        optSpan.setAttribute("option-value", opt);
-                        optSpan.innerHTML = opt;
-                        optLabel.appendChild(optSpan);
-                    }
-                    if ("optslabel" in datum) {
-                        if (datum.optslabel.length > i) {
-                            let optSpan2 = document.createElement("SPAN");
-                            optSpan2.classList.add("select-space-details");
-                            optSpan2.setAttribute("option-value", opt);
-                            optSpan2.innerHTML = datum.optslabel[i];
-                            optLabel.appendChild(optSpan2);
-                        }
-                    }
-                    optData.appendChild(optLabel);
-                    inputData.appendChild(optData);
-                }
-                i += 1;
-            });
-        }
+        this.inputDiskOpts(datum, inputData);
         if ('onchange' in datum) {
             inputData.onchange = function() {
                 let values = [];
@@ -1389,6 +1369,80 @@ class editForm {
         return inputDiv;
     }
 
+    inputDiskOpts(datum, inputData) {
+        if ('opts' in datum) {
+            var checkSingle = function(inpData, datum) {
+                if ("optssingle" in datum) {
+                    if ((datum.optssingle) && (this.checked)) {
+                        let inputs = Array.from(inpData.getElementsByTagName("input"));
+                        inputs.forEach(input => {
+                            if ((input.checked) && (input != this)) {
+                                input.checked = false;
+                            }
+                        });
+                    }
+                }
+            };
+            var i = 0;
+            inputData.innerHTML = "";
+            datum.opts.forEach(opt => {
+                let addOpt = true;
+                if ((datum.disabled || datum.readonly) && (!datum.value.includes(opt))) {
+                    addOpt = false;
+                }
+                if (addOpt) {
+                    let optData = document.createElement("LI");
+                    optData.classList.add("list-group-item");
+                    let optFields = document.createElement("div");
+                    let optLabel = document.createElement("LABEL");
+                    optLabel.classList.add("select-space-row");
+                    var optInput = document.createElement("INPUT");
+                    optInput.setAttribute("type", "checkbox");
+                    optInput.disabled = datum.disabled || datum.readonly;
+                    optInput.onchange = function() {
+                        checkSingle.call(optInput, inputData, datum);
+                    }.bind(this);
+                    if (datum.value.includes(opt)) {
+                        optInput.checked = true;
+                        checkSingle.call(optInput, inputData, datum);
+                    }
+                    optLabel.appendChild(optInput);
+                    if ((!('labelonly' in datum)) || (!datum.labelonly)) {
+                        let optSpan = document.createElement("SPAN");
+                        optSpan.classList.add("select-space-name");
+                        optSpan.setAttribute("option-value", opt);
+                        optSpan.innerHTML = opt;
+                        optLabel.appendChild(optSpan);
+                    }
+                    if ("optslabel" in datum) {
+                        if (datum.optslabel.length > i) {
+                            let optSpan2 = document.createElement("SPAN");
+                            optSpan2.classList.add("select-space-details");
+                            optSpan2.setAttribute("option-value", opt);
+                            optSpan2.innerHTML = datum.optslabel[i];
+                            optLabel.appendChild(optSpan2);
+                        }
+                    } 
+                    optFields.appendChild(optLabel);
+                    if ("optscomment" in datum) {
+                        if (datum.optscomment.length > i) {
+                            if (datum.optscomment[i]) {
+                                let optSpan3 = document.createElement("SPAN");
+                                optSpan3.classList.add("span-right");
+                                optSpan3.setAttribute("option-value", opt);
+                                optSpan3.innerHTML = datum.optscomment[i];
+                                optFields.appendChild(optSpan3);
+                            }
+                        }
+                    }
+                    optData.appendChild(optFields);
+                    inputData.appendChild(optData);
+                }
+                i += 1;
+            });
+        }
+    }
+
     getFormData() {
         var inp = Array.from(this.caller.dataForm.getElementsByClassName("form-control"));
         var data = {};
@@ -1414,8 +1468,8 @@ class editForm {
                         let values = [];
                         let lis = Array.from(inpDatum.childNodes);
                         lis.forEach(li => {
-                            if (li.childNodes[0].childNodes[0].checked) {
-                                values.push(li.childNodes[0].childNodes[1].getAttribute("option-value"));
+                            if (li.childNodes[0].childNodes[0].childNodes[0].checked) {
+                                values.push(li.childNodes[0].childNodes[0].childNodes[1].getAttribute("option-value"));
                             }
                         });
                         if (values.length > 1) {
@@ -1467,6 +1521,13 @@ class editForm {
             if ("param" in datum) {
                 let element = document.querySelector('[data-field="'+datum.param+'"]');
                 if (element) {
+                    if ("opts" in datum) {
+                        if (element.tagName.toLowerCase() == "select") {
+                            this.inputSelectOpts(datum, element);
+                        } else if (element.tagName.toLowerCase() == "ul") { // disk
+                            this.inputDiskOpts(datum, element);
+                        }
+                    }
                     if ("value" in datum) {
                         if (element.tagName.toLowerCase() == "div") { // read only text
                             element.innerHTML = datum.value;
@@ -1480,7 +1541,7 @@ class editForm {
                             element.setAttribute("data-value", datum.value);
                             let lis = Array.from(element.childNodes);
                             lis.forEach(li => {
-                                li.childNodes[0].childNodes[0].checked = (datum.value.includes(li.childNodes[0].childNodes[1].getAttribute("option-value")));
+                                li.childNodes[0].childNodes[0].childNodes[0].checked = (datum.value.includes(li.childNodes[0].childNodes[0].childNodes[1].getAttribute("option-value")));
                             });
                         } else if (element.getAttribute("data-field-type") == "multi") {
                             element.value = datum.value.join(", ");
@@ -1501,7 +1562,7 @@ class editForm {
                             }
                         } else if (element.getAttribute("data-field-type") == "multiip") {
                             // not implemented
-                        }else { // input text, number, password, file
+                        } else { // input text, number, password, file
                             element.value = datum.value;
                         }
                     }
@@ -1714,6 +1775,18 @@ class modalDialog {
             }
         }
     }
+
+    setButtonHidden(btn, hidden) {
+        if (btn != null) {
+            if (hidden) {
+                btn.style.visibility='hidden';
+                btn.style.display = "none";
+            } else {
+                btn.style.visibility='visible';
+                btn.style.display = "inline";
+            }
+        }
+    }
 }
 
 class settingsDialog extends modalDialog {
@@ -1781,7 +1854,7 @@ class editDialog extends modalDialog {
         this.editButton = null;
     }
 
-    build(title, data, cbEdit = null, cbCancel = null, parent = null) {
+    build(title, data, cbEdit = null, btnEdit = "Edit", cbCancel = null, btnCancel = "Cancel", parent = null) {
         this.disposeData();
         var editCallback = function() {
             if (cbEdit != null) {
@@ -1791,10 +1864,10 @@ class editDialog extends modalDialog {
         this.dataForm = document.createElement("FORM");
         super.build(title, data);
         if (!this.cancelButton) {
-            this.cancelButton = this.addButton("Cancel", cbCancel, false, true, false);
+            this.cancelButton = this.addButton(btnCancel, cbCancel, false, true, false);
         }
         if (!this.editButton) {
-            this.editButton = this.addButton("Edit", editCallback.bind(this), true, false, false);
+            this.editButton = this.addButton(btnEdit, editCallback.bind(this), true, false, false);
         }
     }
 
@@ -1873,7 +1946,8 @@ class fileDialog extends modalDialog {
 
         pathBar.classList.add("select-space-row");
         var pathIcon = document.createElement("i");
-        pathIcon.classList.add("pficon-folder-close");
+        pathIcon.classList.add("fas");
+        pathIcon.classList.add("fa-folder");
         this.inputPath = document.createElement("INPUT");
         this.inputPath.classList.add("form-control");
         this.inputPath.setAttribute("type", "text");
@@ -1927,7 +2001,8 @@ class fileDialog extends modalDialog {
 
         fileBar.classList.add("select-space-row");
         var fileIcon = document.createElement("i");
-        fileIcon.classList.add("pficon-applications");
+        fileIcon.classList.add("far");
+        fileIcon.classList.add("fa-window-restore");
         this.filePath = document.createElement("INPUT");
         this.filePath.classList.add("form-control");
         this.filePath.setAttribute("type", "text");
@@ -2163,7 +2238,11 @@ class logger {
 
     setTimer() {
         var onTimer = function() {
-            this.readLog(this.pageSize, this.page)
+            if (this.el.classList.contains('active') && (this.timer != null)) {
+                this.readLog(this.pageSize, this.page);
+            } else {
+                this.clearTimer();
+            }
         };
         if (this.timer == null) {
             this.timer = setInterval(onTimer.bind(this), this.refresh);
@@ -2332,7 +2411,11 @@ class journalLogger {
 
     setTimer() {
         var onTimer = function() {
-            this.readLog(this.pageSize, this.page)
+            if (this.el.classList.contains('active') && (this.timer != null)) {
+                this.readLog(this.pageSize, this.page);
+            } else {
+                this.clearTimer();
+            }
         };
         if (this.timer == null) {
             this.timer = setInterval(onTimer.bind(this), this.refresh);

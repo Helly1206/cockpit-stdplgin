@@ -25,6 +25,8 @@ minify_install () {
     #minify -r -o ".$USRLOC" --match="\.html" $NAME
     cp "$NAME/$NAME.css" ".$USRLOC/"
     cp "$NAME/manifest.json" ".$USRLOC/"
+    cp -r "$NAME/fa/" ".$USRLOC/"
+    cp -r "$NAME/cockpit.css.gz" ".$USRLOC/"
 }
 
 if [ "$EUID" -ne 0 ]

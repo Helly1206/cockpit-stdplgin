@@ -1,3 +1,15 @@
+[B]0.9.3[/B]
+- Placed fa icons and cockpit.css locallyto overcome version incompatibility
+
+[B]0.9.3[/B]
+- Fixed hamburger icon appearance
+- Add option to change button name on editDialog
+- Added option to display settings pane, and canvas pane, and table pane
+- Add option to hide dropdown menu items if condition met
+- Add option to hide a button
+- Add update of opts in updateData
+- Add optscomment to disk field to enter comments
+
 [B]0.9.1[/B]
 - Added label option to select input
 
